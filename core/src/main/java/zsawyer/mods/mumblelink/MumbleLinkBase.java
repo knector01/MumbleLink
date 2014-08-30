@@ -23,9 +23,14 @@
 package zsawyer.mods.mumblelink;
 
 import net.minecraft.client.Minecraft;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import zsawyer.mods.mumblelink.api.MumbleLink;
+import zsawyer.mods.mumblelink.api.MumbleLinkAPI;
 import zsawyer.mods.mumblelink.error.ErrorHandlerImpl;
 import zsawyer.mods.mumblelink.error.ModErrorHandler.ModError;
 import zsawyer.mods.mumblelink.loader.PackageLibraryLoader;
+import zsawyer.mods.mumblelink.mumble.ExtendedUpdateData;
 import zsawyer.mods.mumblelink.mumble.MumbleInitializer;
 import zsawyer.mods.mumblelink.mumble.UpdateData;
 import zsawyer.mumble.jna.LinkAPILibrary;
@@ -41,25 +46,34 @@ import zsawyer.mumble.jna.LinkAPILibrary;
  *         when developing for it I suggest using "mumblePAHelper" to see
  *         coordinates
  */
-public class MumbleLinkBase {
+public abstract class MumbleLinkBase implements MumbleLink {
+    public static Logger LOG = LogManager.getLogger(MumbleLinkBase.class.getSimpleName());
+
+    public static MumbleLinkBase instance;
 
     protected MumbleInitializer mumbleInititer;
     protected Thread mumbleInititerThread;
     protected UpdateData mumbleData;
     protected LinkAPILibrary library;
-    protected ErrorHandlerImpl errorHandler;
+    public ErrorHandlerImpl errorHandler;
+    protected MumbleLinkAPIImpl api;
+
+    protected String name = "MumbleLink";
+    protected String version = "unknown";
+    protected boolean debug = false;
 
     public MumbleLinkBase() {
         super();
+        assert instance == null;
+        instance = this;
     }
 
     public void load() {
+        errorHandler = new ErrorHandlerImpl(this);
         initComponents();
     }
 
     private void initComponents() {
-        errorHandler = ErrorHandlerImpl.getInstance();
-
         try {
             library = new PackageLibraryLoader()
                     .loadLibrary(MumbleLinkConstants.LIBRARY_NAME);
@@ -71,6 +85,13 @@ public class MumbleLinkBase {
 
         mumbleInititer = new MumbleInitializer(library, errorHandler);
         mumbleInititerThread = new Thread(mumbleInititer);
+
+        ExtendedUpdateData extendedUpdateData = new ExtendedUpdateData(library,
+                errorHandler);
+        mumbleData = extendedUpdateData;
+
+        api = new MumbleLinkAPIImpl();
+        api.setExtendedUpdateData(extendedUpdateData);
     }
 
     public void tryUpdateMumble(Minecraft game) {
@@ -88,4 +109,23 @@ public class MumbleLinkBase {
         }
     }
 
+    @Override
+    public MumbleLinkAPI getApi() {
+        return api;
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public String getVersion() {
+        return version;
+    }
+
+    @Override
+    public boolean debugging() {
+        return debug;
+    }
 }

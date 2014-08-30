@@ -24,10 +24,10 @@ package zsawyer.mods.mumblelink.error;
 import cpw.mods.fml.client.FMLClientHandler;
 import net.minecraft.client.Minecraft;
 import org.apache.logging.log4j.Level;
-import zsawyer.mods.mumblelink.MumbleLinkImpl;
+import zsawyer.mods.mumblelink.MumbleLinkBase;
+import zsawyer.mods.mumblelink.api.MumbleLink;
 import zsawyer.mods.mumblelink.notification.BufferedChatNotifier;
 import zsawyer.mods.mumblelink.notification.UserNotifier;
-import zsawyer.mods.mumblelink.util.SingletonFactory;
 
 
 /**
@@ -36,8 +36,10 @@ import zsawyer.mods.mumblelink.util.SingletonFactory;
 public class ErrorHandlerImpl implements ModErrorHandler, NativeInitErrorHandler, NativeUpdateErrorHandler {
 
     private UserNotifier chat;
+    protected MumbleLink mumbleLink;
 
-    public ErrorHandlerImpl() {
+    public ErrorHandlerImpl(MumbleLink mumbleLink) {
+        this.mumbleLink = mumbleLink;
         chat = new BufferedChatNotifier(Minecraft.getMinecraft());
     }
 
@@ -49,8 +51,8 @@ public class ErrorHandlerImpl implements ModErrorHandler, NativeInitErrorHandler
 
     private void haltMinecraftUsingAnException(String message, Throwable err) {
         FMLClientHandler.instance().haltGame("Error in mod "
-                + MumbleLinkImpl.instance.getName() + MumbleLinkImpl.instance.getVersion()
-                + ": " + message,
+                        + mumbleLink.getName() + mumbleLink.getVersion()
+                        + ": " + message,
                 err);
     }
 
@@ -61,9 +63,9 @@ public class ErrorHandlerImpl implements ModErrorHandler, NativeInitErrorHandler
         log(Level.WARN, err.toString(), stack);
     }
 
-    private void log(Level severity, String message, Throwable stack) {
-        MumbleLinkImpl.LOG.log(severity,
-                "[" + MumbleLinkImpl.instance.getName() + MumbleLinkImpl.instance.getVersion() + "]"
+ public void log(Level severity, String message, Throwable stack) {
+        MumbleLinkBase.LOG.log(severity,
+                "[" + mumbleLink.getName() + mumbleLink.getVersion() + "]"
                         + "[" + severity.toString() + "] "
                         + message,
                 stack);
@@ -84,15 +86,6 @@ public class ErrorHandlerImpl implements ModErrorHandler, NativeInitErrorHandler
     public void handleError(NativeInitError fromCode) {
         if (fromCode == NativeInitError.NO_ERROR) {
             chat.print(UserNotifier.LINK_SUCCESS_MESSAGE);
-        }
-    }
-
-    public static ErrorHandlerImpl getInstance() {
-        try {
-            return SingletonFactory.getInstance(ErrorHandlerImpl.class);
-        } catch (Exception ex) {
-            // nothing we can do
-            throw new RuntimeException(ex);
         }
     }
 

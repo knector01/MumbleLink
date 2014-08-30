@@ -20,7 +20,7 @@
 
  */
 
-package zsawyer.mods.mumblelink;
+package zsawyer.mods.mumblelink.vendor.forge;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Mod;
@@ -31,6 +31,8 @@ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.Logger;
+import zsawyer.mods.mumblelink.MumbleLinkAPIImpl;
+import zsawyer.mods.mumblelink.MumbleLinkBase;
 import zsawyer.mods.mumblelink.api.MumbleLink;
 import zsawyer.mods.mumblelink.api.MumbleLinkAPI;
 import zsawyer.mods.mumblelink.mumble.ExtendedUpdateData;
@@ -46,22 +48,16 @@ import zsawyer.mods.mumblelink.util.ConfigHelper;
 // TODO: use "canBeDeactivated = true" to allow mod deactivation via FML
 @Mod(modid = MumbleLink.MOD_ID, useMetadata = true)
 @SideOnly(Side.CLIENT)
-public class MumbleLinkImpl extends MumbleLinkBase implements
-        MumbleLink {
+public class MumbleLinkForgeImpl extends MumbleLinkBase {
     public static Logger LOG;
 
     // The instance of the mod that Forge uses.
     @Instance(MumbleLink.MOD_ID)
-    public static MumbleLinkImpl instance;
+    public static MumbleLinkForgeImpl instance;
     //
     private UpdateTicker updateTicker;
-    private MumbleLinkAPIImpl api;
 
     private boolean enabled = true;
-    private boolean debug = false;
-
-    private String name = "MumbleLink";
-    private String version = "unknown";
 
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
@@ -71,7 +67,7 @@ public class MumbleLinkImpl extends MumbleLinkBase implements
         version = event.getModMetadata().version;
 
         if (FMLCommonHandler.instance().getSide().isServer())
-            throw new RuntimeException(name
+            throw new RuntimeException(getName()
                     + " should not be installed on a server!");
 
         loadConfig(event);
@@ -80,30 +76,20 @@ public class MumbleLinkImpl extends MumbleLinkBase implements
     private void loadConfig(FMLPreInitializationEvent event) {
         ConfigHelper configHelper = new ConfigHelper(event);
 
-        debug = configHelper.loadDebug(debug);
+        debug = configHelper.loadDebug(debugging());
         enabled = configHelper.loadEnabled(enabled);
     }
 
     @SideOnly(Side.CLIENT)
     @EventHandler
     public void load(FMLInitializationEvent event) {
-        load();
+        super.load();
         initComponents();
         activate();
     }
 
     private void initComponents() {
-        ExtendedUpdateData extendedUpdateData = new ExtendedUpdateData(library,
-                errorHandler);
-        mumbleData = extendedUpdateData;
-        updateTicker = new UpdateTicker();
-        api = new MumbleLinkAPIImpl();
-        api.setExtendedUpdateData(extendedUpdateData);
-    }
-
-    @Override
-    public MumbleLinkAPI getApi() {
-        return api;
+        this.updateTicker = new UpdateTicker();
     }
 
     @Override
@@ -116,22 +102,4 @@ public class MumbleLinkImpl extends MumbleLinkBase implements
         updateTicker.deactivate();
     }
 
-    @Override
-    public boolean debugging() {
-        return debug;
-    }
-
-    public static boolean debug() {
-        return instance.debug;
-    }
-
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public String getVersion() {
-        return version;
-    }
 }

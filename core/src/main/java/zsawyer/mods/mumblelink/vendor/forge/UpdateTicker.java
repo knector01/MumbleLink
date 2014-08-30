@@ -19,13 +19,14 @@
  along with mod_MumbleLink.  If not, see <http://www.gnu.org/licenses/>.
 
  */
-package zsawyer.mods.mumblelink;
+package zsawyer.mods.mumblelink.vendor.forge;
 
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
 import zsawyer.mods.mumblelink.api.Activateable;
+import zsawyer.mods.mumblelink.vendor.forge.MumbleLinkForgeImpl;
 
 /**
  * @author zsawyer
@@ -37,7 +38,7 @@ public class UpdateTicker implements Activateable {
     @SubscribeEvent
     public void tickEnd(TickEvent.ClientTickEvent event) {
         if (enabled) {
-            MumbleLinkImpl.instance.tryUpdateMumble(FMLClientHandler.instance()
+            MumbleLinkForgeImpl.instance.tryUpdateMumble(FMLClientHandler.instance()
                     .getClient());
         }
     }

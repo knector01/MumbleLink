@@ -25,7 +25,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.Vec3;
 import zsawyer.mods.mumblelink.MumbleLinkConstants;
-import zsawyer.mods.mumblelink.MumbleLinkImpl;
+import zsawyer.mods.mumblelink.vendor.forge.MumbleLinkForgeImpl;
 import zsawyer.mods.mumblelink.api.ContextManipulator;
 import zsawyer.mods.mumblelink.api.IdentityManipulator;
 import zsawyer.mods.mumblelink.error.NativeUpdateErrorHandler;
@@ -50,13 +50,13 @@ public class UpdateData {
     float[] fCameraTop = {0, 0, 0}; // [3]
     String identity = ""; // [256]
     String context = ""; // [256]
-    LinkAPILibrary mumbleLink;
+    LinkAPILibrary apiLibrary;
     NativeUpdateErrorHandler errorHandler;
     private int uiTick = 0;
 
-    public UpdateData(LinkAPILibrary mumbleLink,
+    public UpdateData(LinkAPILibrary apiLibrary,
                       NativeUpdateErrorHandler errorHandler) {
-        this.mumbleLink = mumbleLink;
+        this.apiLibrary = apiLibrary;
         this.errorHandler = errorHandler;
 
         name = MumbleInitializer.PLUGIN_NAME;
@@ -88,7 +88,7 @@ public class UpdateData {
         lm.fCameraFront = fCameraFront;
         lm.fCameraTop = fCameraTop;
 
-        byte successMessage = mumbleLink.updateData(lm);
+        byte successMessage = apiLibrary.updateData(lm);
         boolean success = (successMessage != 0);
 
         if (!success) {
@@ -202,7 +202,7 @@ public class UpdateData {
             newIdentity.put(IdentityManipulator.IdentityKey.NAME, displayName);
             return newIdentity.toString();
         } catch (JSONException e) {
-            MumbleLinkImpl.LOG.fatal("could not generate identity", e);
+            MumbleLinkForgeImpl.LOG.fatal("could not generate identity", e);
         }
 
         return displayName;
@@ -215,7 +215,7 @@ public class UpdateData {
                     MumbleLinkConstants.MUMBLE_CONTEXT_DOMAIN_ALL_TALK);
             return newContext.toString();
         } catch (JSONException e) {
-            MumbleLinkImpl.LOG.fatal("could not generate context", e);
+            MumbleLinkForgeImpl.LOG.fatal("could not generate context", e);
         }
 
         return MumbleLinkConstants.MUMBLE_CONTEXT_DOMAIN_ALL_TALK;

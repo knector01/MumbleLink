@@ -23,7 +23,9 @@
 package zsawyer.mods.mumblelink.mumble;
 
 import net.minecraft.client.Minecraft;
-import zsawyer.mods.mumblelink.MumbleLinkImpl;
+import org.apache.logging.log4j.Level;
+import zsawyer.mods.mumblelink.MumbleLinkBase;
+import zsawyer.mods.mumblelink.vendor.forge.MumbleLinkForgeImpl;
 import zsawyer.mods.mumblelink.api.ContextManipulator;
 import zsawyer.mods.mumblelink.api.IdentityManipulator;
 import zsawyer.mods.mumblelink.error.NativeUpdateErrorHandler;
@@ -37,9 +39,9 @@ public class ExtendedUpdateData extends UpdateData {
 
     protected ArrayList<ContextManipulator> contextManipulators;
 
-    public ExtendedUpdateData(LinkAPILibrary mumbleLink,
+    public ExtendedUpdateData(LinkAPILibrary apiLibrary,
                               NativeUpdateErrorHandler errorHandler) {
-        super(mumbleLink, errorHandler);
+        super(apiLibrary, errorHandler);
         identityManipulators = new ArrayList<IdentityManipulator>();
         contextManipulators = new ArrayList<ContextManipulator>();
     }
@@ -56,8 +58,8 @@ public class ExtendedUpdateData extends UpdateData {
             }
         }
 
-        if (MumbleLinkImpl.debug()) {
-            MumbleLinkImpl.LOG.info("context: " + context);
+        if (MumbleLinkBase.instance.debugging()) {
+            MumbleLinkBase.instance.errorHandler.log(Level.INFO, "context: " + context, null);
         }
 
         return context;
@@ -75,8 +77,8 @@ public class ExtendedUpdateData extends UpdateData {
             }
         }
 
-        if (MumbleLinkImpl.debug()) {
-            MumbleLinkImpl.LOG.info("identity: " + identity);
+        if (MumbleLinkBase.instance.debugging()) {
+            MumbleLinkBase.instance.errorHandler.log(Level.INFO, "identity: " + identity, null);
         }
 
         return identity;
@@ -84,7 +86,7 @@ public class ExtendedUpdateData extends UpdateData {
 
     private boolean verify(String type, String value, int maxLength) {
         if (value.length() > maxLength) {
-            MumbleLinkImpl.LOG
+            MumbleLinkForgeImpl.LOG
                     .fatal(type + " (" + value.length()
                             + ") is too long (max. " + maxLength + "): '"
                             + value + "'");
